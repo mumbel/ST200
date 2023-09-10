@@ -1,0 +1,11 @@
+##VERSION: 2.0
+Module.manifest||GHIDRA||||END|
+data/languages/st200_common.sinc||GHIDRA||||END|
+data/languages/st200.sinc||GHIDRA||||END|
+data/languages/st231.sinc||GHIDRA||||END|
+data/languages/st240.sinc||GHIDRA||||END|
+data/languages/st200_le.slaspec||GHIDRA||||END|
+data/languages/st200_be.slaspec||GHIDRA||||END|
+data/languages/st200.cspec||GHIDRA||||END|
+data/languages/st200.pspec||GHIDRA||||END|
+data/languages/st200.opinion||GHIDRA||||END|

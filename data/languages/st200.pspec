@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<processor_spec>
+  <programcounter register="PC" />
+  <default_memory_blocks>
+    <memory_block name="CREG_BASE" start_address="0xffff0000" length="0x10000" mode="rwv" initialized="false" />
+  </default_memory_blocks>
+  <default_symbols>
+    <symbol name="PSW" address="0xfffffff8" entry="false" />
+    <symbol name="SAVED_PSW" address="0xfffffff0" entry="false" />
+    <symbol name="SAVED_PC" address="0xffffffe8" entry="false" />
+    <symbol name="HANDLER_PC" address="0xffffffe0" entry="false" />
+    <symbol name="EXCEPT_CAUSE" address="0xffffffd8" entry="false" />
+    <symbol name="EXCEPT_ADDR" address="0xffffffd0" entry="false" />
+    <symbol name="ST200_VERSION" address="0xffffffc8" entry="false" />
+    <symbol name="SAVED_SAVED_PSW" address="0xffffffc0" entry="false" />
+    <symbol name="SAVED_SAVED_PC" address="0xffffffb8" entry="false" />
+    <symbol name="PERIPHERAL_BASE" address="0xffffffb0" entry="false" />
+    <symbol name="SCRATCH1" address="0xffffffa8" entry="false" />
+    <symbol name="SCRATCH2" address="0xffffffa0" entry="false" />
+    <symbol name="DPU_REGION0" address="0xffffff80" entry="false" />
+    <symbol name="DPU_ATR0" address="0xffffff78" entry="false" />
+    <symbol name="DPU_REGION1" address="0xffffff70" entry="false" />
+    <symbol name="DPU_ATR1" address="0xffffff68" entry="false" />
+    <symbol name="DPU_REGION2" address="0xffffff60" entry="false" />
+    <symbol name="DPU_ATR2" address="0xffffff58" entry="false" />
+    <symbol name="DPU_REGION3" address="0xffffff50" entry="false" />
+    <symbol name="DPU_ATR3" address="0xffffff48" entry="false" />
+    <symbol name="DPU_REGION4" address="0xffffff40" entry="false" />
+    <symbol name="DPU_ATR4" address="0xffffff38" entry="false" />
+    <symbol name="DPU_REGION5" address="0xffffff30" entry="false" />
+    <symbol name="DPU_ATR5" address="0xffffff28" entry="false" />
+    <symbol name="DPU_REGION6" address="0xffffff20" entry="false" />
+    <symbol name="DPU_ATR6" address="0xffffff18" entry="false" />
+    <symbol name="DPU_REGION7" address="0xffffff10" entry="false" />
+    <symbol name="DPU_ATR7" address="0xffffff08" entry="false" />
+    <symbol name="DBREAK_LOWER" address="0xfffffe80" entry="false" />
+    <symbol name="DBREAK_UPPER" address="0xfffffe78" entry="false" />
+    <symbol name="DBREAK_CONTROL" address="0xfffffe70" entry="false" />
+    <symbol name="IPU_REGION0" address="0xfffffe40" entry="false" />
+    <symbol name="IPU_ATR0" address="0xfffffe38" entry="false" />
+    <symbol name="IPU_REGION1" address="0xfffffe30" entry="false" />
+    <symbol name="IPU_ATR1" address="0xfffffe28" entry="false" />
+    <symbol name="IPU_REGION2" address="0xfffffe20" entry="false" />
+    <symbol name="IPU_ATR2" address="0xfffffe18" entry="false" />
+    <symbol name="IPU_REGION3" address="0xfffffe10" entry="false" />
+    <symbol name="IPU_ATR3" address="0xfffffe08" entry="false" />
+    <symbol name="IBREAK_LOWER" address="0xfffffdd0" entry="false" />
+    <symbol name="IBREAK_UPPER" address="0xfffffdc8" entry="false" />
+    <symbol name="IBREAK_CONTROL" address="0xfffffdc0" entry="false" />
+    <symbol name="PM_CR" address="0xfffff800" entry="false" />
+    <symbol name="PM_CNT0" address="0xfffff808" entry="false" />
+    <symbol name="PM_CNT1" address="0xfffff810" entry="false" />
+    <symbol name="PM_CNT2" address="0xfffff818" entry="false" />
+    <symbol name="PM_CNT3" address="0xfffff820" entry="false" />
+    <symbol name="PM_PCLK" address="0xfffff828" entry="false" />
+    <symbol name="SDI0_DATA" address="0xffffe000" entry="false" />
+    <symbol name="SDI0_READY" address="0xffffe008" entry="false" />
+    <symbol name="SDI0_CONTROL" address="0xffffe010" entry="false" />
+    <symbol name="SDI0_COUNT" address="0xffffe018" entry="false" />
+    <symbol name="SDI0_TIMEOUT" address="0xffffe020" entry="false" />
+    <symbol name="SDI1_DATA" address="0xffffe400" entry="false" />
+    <symbol name="SDI1_READY" address="0xffffe408" entry="false" />
+    <symbol name="SDI1_CONTROL" address="0xffffe410" entry="false" />
+    <symbol name="SDI1_COUNT" address="0xffffe418" entry="false" />
+    <symbol name="SDI1_TIMEOUT" address="0xffffe420" entry="false" />
+    <symbol name="SDI2_DATA" address="0xffffe800" entry="false" />
+    <symbol name="SDI2_READY" address="0xffffe808" entry="false" />
+    <symbol name="SDI2_CONTROL" address="0xffffe810" entry="false" />
+    <symbol name="SDI2_COUNT" address="0xffffe818" entry="false" />
+    <symbol name="SDI2_TIMEOUT" address="0xffffe820" entry="false" />
+    <symbol name="SDI3_DATA" address="0xffffec00" entry="false" />
+    <symbol name="SDI3_READY" address="0xffffec08" entry="false" />
+    <symbol name="SDI3_CONTROL" address="0xffffec10" entry="false" />
+    <symbol name="SDI3_COUNT" address="0xffffec18" entry="false" />
+    <symbol name="SDI3_TIMEOUT" address="0xffffec20" entry="false" />
+  </default_symbols>
+</processor_spec>

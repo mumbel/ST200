@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<compiler_spec>
+  <global>
+    <range space="ram"/>
+  </global>
+  <stackpointer register="r12" space="ram" />
+  <returnaddress>
+    <register name="r63" />
+  </returnaddress>
+  <default_proto>
+    <prototype name="__stdcall" extrapop="0" stackshift="16">
+      <input>
+        <pentry minsize="1" maxsize="4">
+	  <register name="r16" />
+	</pentry>
+        <pentry minsize="1" maxsize="4">
+	  <register name="r17" />
+	</pentry>
+        <pentry minsize="1" maxsize="4">
+	  <register name="r18" />
+	</pentry>
+        <pentry minsize="1" maxsize="4">
+	  <register name="r19" />
+	</pentry>
+        <pentry minsize="1" maxsize="4">
+	  <register name="r20" />
+	</pentry>
+        <pentry minsize="1" maxsize="4">
+	  <register name="r21" />
+	</pentry>
+        <pentry minsize="1" maxsize="4">
+	  <register name="r22" />
+	</pentry>
+        <pentry minsize="1" maxsize="4">
+	  <register name="r23" />
+	</pentry>
+	<pentry minsize="1" maxsize="500" align="4">
+          <addr offset="16" space="stack"/>
+        </pentry>
+      </input>
+      <output>
+	<!--
+        <pentry minsize="4" maxsize="4">
+	  <register name="r15" /> --> <!-- struct/union pointer --><!--
+      </pentry>
+      -->
+        <pentry minsize="1" maxsize="4">
+	  <register name="r16" />
+	</pentry>
+        <pentry minsize="5" maxsize="8">
+	  <addr space="join" piece1="r16" piece2="r17" />
+	</pentry>
+      </output>
+      <unaffected>
+        <register name="r0" /> <!-- zero -->
+	<register name="r1" /> <!-- preserved -->
+	<register name="r2" /> <!-- preserved -->
+	<register name="r3" /> <!-- preserved -->
+	<register name="r4" /> <!-- preserved -->
+	<register name="r5" /> <!-- preserved -->
+	<register name="r6" /> <!-- preserved -->
+	<register name="r7" /> <!-- preserved -->
+	<register name="r14" /> <!-- global pointer -->
+      </unaffected>
+    </prototype>
+  </default_proto>
+</compiler_spec>

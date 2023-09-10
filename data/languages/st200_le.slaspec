@@ -1,0 +1,4 @@
+# sleigh specification for little endian LE ST200
+
+define endian=little;
+@include "st200.sinc"

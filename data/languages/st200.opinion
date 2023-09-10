@@ -1,0 +1,8 @@
+<opinions>
+  <constraint loader="Executable and Linking Format (ELF)">
+    <constraint compilerSpecID="gcc">
+      <constraint primary="100" processor="ST200" endian="little" size="32" variant="default" />
+      <constraint primary="100" processor="ST200" endian="big" size="32" variant="default" />
+    </constraint>
+  </constraint>
+</opinions>

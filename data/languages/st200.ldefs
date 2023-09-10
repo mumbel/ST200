@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language_definitions>
+    <language processor="ST200"
+            endian="little"
+            size="32"
+            variant="default"
+            version="0.1"
+            slafile="st200_le.sla"
+            processorspec="st200.pspec"
+            id="st200:LE:32:default">
+    <description>STMicroelectronics ST200 Little-Endian</description>
+    <compiler name="gcc" spec="st200.cspec" id="gcc"/>
+  </language>
+    <language processor="ST200"
+            endian="big"
+            size="32"
+            variant="default"
+            version="0.1"
+            slafile="st200_be.sla"
+            processorspec="st200.pspec"
+            id="st200:BE:32:default">
+    <description>STMicroelectronics ST200 Big-Endian</description>
+    <compiler name="gcc" spec="st200.cspec" id="gcc"/>
+  </language>
+</language_definitions>

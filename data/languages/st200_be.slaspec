@@ -1,0 +1,4 @@
+# sleigh specification for big endian BE ST200
+
+define endian=big;
+@include "st200.sinc"

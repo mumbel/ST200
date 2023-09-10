@@ -1,0 +1,1344 @@
+# sleigh specfication include for ST200
+
+define alignment=4;
+
+define space ram type=ram_space size=4 default;
+define space register type=register_space size=4;
+
+#TODO Add $ back in
+# 32-bit general purpose regiters
+# r0 reads as zero, writes have no effect
+# r1-r7, preserved
+# r12 - stack pointer (SP)
+# r13 - thread pointer (TP)
+# r14 - global pointer (GP), preserved
+# r63 - link register (LR)
+define register offset=0x0 size=4 [
+    r0  r1  r2  r3  r4  r5  r6  r7  r8  r9  r10 r11 r12 r13 r14 r15
+    r16 r17 r18 r19 r20 r21 r22 r23 r24 r25 r26 r27 r28 r29 r30 r31
+    r32 r33 r34 r35 r36 r37 r38 r39 r40 r41 r42 r43 r44 r45 r46 r47
+    r48 r49 r50 r51 r52 r53 r54 r55 r56 r57 r58 r59 r60 r61 r62 r63 ];
+
+# Program counter; address of the current bundle
+define register offset=0x100 size=4 [ PC ];
+
+# Program Status Word
+define register offset=0x104 size=4 [ PSW ];
+
+# Copy of the PC used during interrupts
+define register offset=0x108 size=4 [ SAVED_PC ];
+
+# Copy of the PSW used during interrupts
+define register offset=0x10c size=4 [ SAVED_PSW ];
+
+# Copy of the PC used during debug interrupts
+define register offset=0x110 size=4 [ SAVED_SAVED_PC ];
+
+# Copy of the PSW used during debug interrupts
+define register offset=0x114 size=4 [ SAVED_SAVED_PSW ];
+
+# 1-bit Branch Registers
+define register offset=0x200 size=1 [ b0 b1 b2 b3 b4 b5 b6 b7 ];
+
+define register offset=0x300 size=4 [ extension ];
+
+define token insn (32)
+  op0005 = (0,5)
+  op0020 = (0,20)
+  op0022 = (0,22)
+  sop0022 = (0,22) signed
+  op0611 = (6,11)
+  op0911 = (9,11)
+  op1217 = (12,17)
+  op1218 = (12,18)
+  op1220 = (12,20)
+  sop1220 = (12,20) signed
+  op1520 = (15,20)
+  op1820 = (18,20)
+  op2122 = (21,22)
+  op2123 = (21,23)
+  op2124 = (21,24)
+  op2125 = (21,25)
+  op2127 = (21,27)
+  op23 = (23,23)
+  op2327 = (23,27)
+  op2426 = (24,26)
+  op2427 = (24,27)
+  op25 = (25,25)
+  op26 = (26,26)
+  op27 = (27,27)
+  op2829 = (28,29)
+  op30 = (30,30)
+  op31 = (31,31)
+  SRC1 = (0,5)
+  SRC2 = (6,11)
+  IBDEST = (6,8)
+  IDEST = (6,11)
+  NLIDEST = (6,11)
+  BDEST2 = (12,14)
+  DEST = (12,17)
+  NLDEST = (12,17)
+  BDEST = (18,20)
+  SCOND = (21,23)
+  BCOND = (23,25)
+  LNK = (23,23)
+;
+
+# TODO ATTACH
+# TODO r0 zero logic
+
+attach variables [ BCOND BDEST BDEST2 IBDEST SCOND ]
+                 [ b0 b1 b2 b3 b4 b5 b6 b7 ];
+
+attach variables [ DEST IDEST SRC1 SRC2 ]
+                 [ r0  r1  r2  r3  r4  r5  r6  r7  r8  r9  r10 r11 r12 r13 r14 r15
+                   r16 r17 r18 r19 r20 r21 r22 r23 r24 r25 r26 r27 r28 r29 r30 r31
+                   r32 r33 r34 r35 r36 r37 r38 r39 r40 r41 r42 r43 r44 r45 r46 r47
+                   r48 r49 r50 r51 r52 r53 r54 r55 r56 r57 r58 r59 r60 r61 r62 r63 ];
+
+attach variables [ NLDEST NLIDEST ]
+                 [ r0  r1  r2  r3  r4  r5  r6  r7  r8  r9  r10 r11 r12 r13 r14 r15
+                   r16 r17 r18 r19 r20 r21 r22 r23 r24 r25 r26 r27 r28 r29 r30 r31
+                   r32 r33 r34 r35 r36 r37 r38 r39 r40 r41 r42 r43 r44 r45 r46 r47
+                   r48 r49 r50 r51 r52 r53 r54 r55 r56 r57 r58 r59 r60 r61 r62 _ ];
+
+#
+# pcodeop
+#
+
+define pcodeop break;
+define pcodeop dbgbreak;
+define pcodeop Dib;
+define pcodeop FlushAddress;
+define pcodeop FlushAddressL1;
+define pcodeop InvalidateAddress;
+define pcodeop InvalidateAddressL1;
+define pcodeop PrefetchMemory;
+define pcodeop PurgeAddress;
+define pcodeop PurgeAddressL1;
+define pcodeop PurgeIns;
+define pcodeop PurgeInsAddress;
+define pcodeop PurgeInsAddressL1;
+define pcodeop PurgeInsSet;
+define pcodeop PurgeInsSetL1;
+define pcodeop PurgeInsPg;
+define pcodeop PurgeSet;
+define pcodeop PswClr;
+define pcodeop PswSet;
+define pcodeop Retenion;
+define pcodeop rfi;
+define pcodeop sbreak;
+define pcodeop Sync;
+define pcodeop SyncIns;
+define pcodeop syscall;
+define pcodeop WaitForLink;
+define pcodeop Wmb;
+
+
+# bit 30 is always zero
+with : op30=0 {
+
+#
+# Table / Constructor
+#
+
+#TODO  does this have signed?
+BTARG: addr is sop0022 [ addr = inst_start + (sop0022 << 2); ] { local ea:4 = addr; export ea; }
+
+#TODO  signed if no imml or immr
+#TODO  unsigned if imml or immr
+ISRC2: sop1220 is sop1220 & op1220
+{
+	local tmp:4 = (zext(extension == 0) * sop1220) + (zext(extension != 0) * op1220);
+	tmp = tmp + extension;
+	extension = 0;
+	export tmp;
+}
+
+
+#TODO  signed and unsigend
+IMM: imm is op0022 [ imm = op0022 << 9; ] { local tmp:4 = imm; export tmp; }
+
+SBRKNUM: op0020 is op0020 { local tmp:4 = op0020; export tmp; }
+
+ICBUS: op1218 is op1218 { local tmp:4 = op1218; export tmp; }
+
+src1: SRC1 is SRC1 & op0005=0 { export 0:4; }
+src1: SRC1 is SRC1            { export SRC1; }
+
+dst:  DEST   is DEST   & op25=0 & op27=0 & op1820=0 & op1217=0 { local tmpzero:4 = 0; export tmpzero; }
+dst:  DEST   is DEST   & op25=0 & op27=0 & op1820=0            { export DEST; }
+dst:  IDEST  is IDEST  & op25=0 & op27=1 & op0611=0            { local tmpzero:4 = 0; export tmpzero; }
+dst:  IDEST  is IDEST  & op25=0 & op27=1                       { export IDEST; }
+
+bdst: BDEST  is BDEST  & op25=1 & op27=0 & op1217=0 { export BDEST; }
+bdst: IBDEST is IBDEST & op25=1 & op27=1 & op0911=0 { export IBDEST; }
+
+src2: SRC2  is SRC2  & op27=0 & op0611=0 { local tmpzero:4 = 0; export tmpzero; }
+src2: SRC2  is SRC2  & op27=0            { export SRC2; }
+src2: ISRC2 is ISRC2 & op27=1            { local tmp:4 = ISRC2; export tmp; }
+
+stop: is op31=0 {} # { delayslot(1); }
+stop: is op31=1 {               }
+
+#
+# Macro
+#
+
+macro BUNDLE(stop_bit) {
+#       if (stop_bit) goto <end_of_bundle>;
+#       delayslot(1);
+# <end_of_bundle>
+}
+
+#
+# Pseudo
+#
+
+#TODO  ST231
+# slctf RIDEST = BSCOND, R0, 1
+# :convbi IDEST=SCOND is op31 & stop & op0005=0 & IDEST & op1220=1 & SCOND & op2426=1 & op27=1 & op2829=1
+# {
+# 	#TODO
+# 	build stop; BUNDLE(op31:1);
+# 	IDEST = 0;
+# 	if (SCOND == 0) goto inst_next;
+# 	IDEST = 1;
+# }
+#TODO  ST231
+
+#TODO  ST231
+# orl BBDEST2 = RSRC1, R0
+# :convib BDEST=src1 is op31 & stop & src1 & op0611=0 & BDEST & op1520=0 & op2124=12 & op25=1 & op26=1 & op27=0 & op2829=0
+# {
+# 	#TODO
+# 	build stop; BUNDLE(op31:1);
+# 	BDEST = zext(src1 != 0);
+# }
+#TODO  ST231
+
+#TODO  ST231
+# goto 0
+# :idle is op31=1 & BTARG & op0022=0 & op23=0 & op2426=1 & op27=0 & op2829=3
+# {
+# 	#TODO
+# 	build stop; BUNDLE(op31:1);
+# 	goto BTARG;
+# }
+#TODO  ST231
+
+# slctf IDEST = SCOND,R0,1
+# :mfb dst=SCOND is op31 & stop & op0005=0 & src1 & op1220=1 & src2 & dst & SCOND & op2426=0b001 & op27=1 & op2829=1
+# {
+# 	#TODO
+# 	build stop; BUNDLE(op31:1);
+# 	local tmp:4 = src2;
+# 	dst = src1;
+# 	if (SCOND == 0) goto inst_next;
+# 	dst = tmp;
+# }
+
+# slctf RIDEST = BSCOND,R0,1
+# :mov IDEST=SCOND is op31 & stop & op0005=0 & IDEST & op1220=1 & SCOND & op2426=1 & op27=1 & op2829=1
+# {
+# 	#TODO
+# 	build stop; BUNDLE(op31:1);
+# 	IDEST = zext(SCOND != 0);	
+# }
+
+# or BBDEST = RSRC1,R0
+# :mov BDEST=src1 is op31 & stop & src1 & op0611=0 & op1218=0 & BDEST & op2124=12 & op25=1 & op26=1 & op27=0 & op2829=0
+# {
+# 	#TODO
+# 	build stop; BUNDLE(op31:1);
+# 	BDEST = src1 != 0;
+# }
+
+# add RDEST = R0,SRC2
+# add RIDEST = R0,ISRC2
+# :mov dst=src2 is op31 & stop & op0005=0 & src2 & dst & op2124=0 & op26=0 & op2829=0
+# {
+# 	#TODO
+# 	build stop; BUNDLE(op31:1);
+# 	dst = src2;
+# }
+
+# orl BDEST = RSRC1,R0
+# :mtb bdst=src1 is op31 & stop & src1 & op0611=0 & bdst & op2124=12 & op25=1 & op26=1 & op2829=0
+# {
+# 	#TODO
+# 	build stop; BUNDLE(op31:1);
+# 	bdst = zext(src1 != 0);
+# }
+
+# add R0 = R0,R0
+# :nop is op31 & stop & op0005=0 & src1 & op0611=0 & op1217=0 & op2124=0 & op25=0 & op26=0 & op27=0 & op2829=0
+# {
+# 	#TODO
+# 	build stop; BUNDLE(op31:1);
+# 	src1 = src1 + src1;
+# }
+
+#TODO  ST231
+# goto $r63
+# :return is op31 & stop & op0022=0 & op23=1 & op2426=1 & op27=0 & op2829=3
+# {
+# 	# This is the first syllable of a bundle
+# 	#TODO
+# 	build stop; BUNDLE(op31:1);
+# 	goto [r63];
+# }
+#TODO  ST231
+
+#TODO  This one is bad
+#
+# :syncins is op31 & stop & op0022=1 & op23=0 & op2426=1 & op27=0 & op2829=3
+# {
+# 	#TODO
+# 	build stop; BUNDLE(op31:1);
+# 	SyncIns();
+# }
+
+# and RIDEST = RSRC1,255
+# :zxtb dst=src1 is op31 & stop & src1 & op1220=255 & dst & op2124=9 & op25=0 & op26=0 & op27=1 & op2829=0
+# {
+# 	#TODO
+# 	build stop; BUNDLE(op31:1);
+# 	dst = zext(src1[0,8]);
+# }
+
+
+
+
+#
+# Instructions
+#
+
+# add RDEST = RSRC1, RSRC2
+# add RIDEST = RSRC1, ISRC2
+:add dst=src1,src2 is op31 & stop & src1 & src2 & dst & op2124=0 & op26=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	dst = src1 + src2;
+}
+
+# addcg RDEST, BBDEST = RSRC1, RSRC2, BSCOND
+:addcg DEST,BDEST=src1,SRC2,SCOND is op31 & stop & src1 & SRC2 & DEST & BDEST & SCOND & op2427=2 & op2829=1
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:5 = zext(src1) + zext(SRC2) + zext(SCOND);
+	DEST = tmp[0,32];
+	BDEST = tmp[32,1];
+}
+
+# and RDEST = RSRC1, RSRC2
+# and RIDEST = RSRC1, ISRC2
+:and dst=src1,src2 is op31 & stop & src1 & src2 & dst & op2124=9 & op26=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	dst = src1 & src2;
+}
+
+# andc RDEST = RSRC1, RSRC2
+# andc RIDEST = RSRC1, ISRC2
+:andc dst=src1,src2 is op31 & stop & src1 & src2 & dst & op2124=10 & op26=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	dst = ~src1 & src2;
+}
+
+# andl RDEST = RSRC1, RSRC2
+# andl RIDEST = RSRC1, ISRC2
+:andl dst=src1,src2 is op31 & stop & src1 & src2 & dst & op2124=10 & op26=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	dst = zext((src1 != 0) & (src2 != 0));
+}
+
+# andl BBDEST = RSRC1, RSRC2
+# andl BIBDEST = RSRC1, ISRC2
+:andl bdst=src1,src2 is op31 & stop & src1 & src2 & bdst & op2124=10 & op26=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	bdst = (src1 != 0) & (src2 != 0);
+}
+
+# br BBCOND, BTARG
+:br BCOND,BTARG is op31 & stop & BTARG & BCOND & op26=0 & op27=1 & op2829=3
+{
+	# This is the first syllable of a bundle
+	#TODO
+	#TODO  is delayslot only if no jump
+	build stop; BUNDLE(op31:1);
+	if (BCOND != 0) goto BTARG;
+}
+
+# break
+:break is op31 & stop & op0020=0 & op2127=127 & op2829=1
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:4 = break();
+	call [tmp];
+}
+
+# brf BBCOND, BTARG
+:brf BCOND,BTARG is op31 & stop & BTARG & BCOND & op26=1 & op27=1 & op2829=3
+{
+	# This is the first syllable of a bundle
+	#TODO
+	#TODO  is delayslot only if no jump
+	build stop; BUNDLE(op31:1);
+	if (BCOND == 0) goto BTARG;
+}
+
+# bswap RIDEST = RSRC1
+:bswap IDEST=src1 is op31 & stop & src1 & IDEST & op1220=2 & op2125=14 & op26=0 & op27=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	IDEST = zext(src1[0,8] << 24) | zext(src1[8,8] << 16) | zext(src1[16,8] << 8) | zext(src1[24,8]);
+}
+
+# call $r63 = BTARG
+:call r63=BTARG is op31 & stop & BTARG & op23=0 & op2426=0 & op27=0 & op2829=3 & r63
+{
+	# This is the first syllable of a bundle
+	#TODO
+	build stop; BUNDLE(op31:1);	
+	r63 = inst_next;
+	call [BTARG];
+}
+
+# call $r63 = $r63
+:call r63 is op31 & stop & op0022=0 & op23=1 & op2426=0 & op27=0 & op2829=3 & r63
+{
+	# This is the first syllable of a bundle
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local ea:4 = r63;
+	r63 = inst_next;
+	call [ea];
+}
+
+# clz RIDEST = RSRC1
+:clz IDEST=src1 is op31 & stop & src1 & IDEST & op1220=4 & op2125=14 & op26=0 & op27=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	IDEST = lzcount(src1);
+}
+
+cc: "eq"  is src1 & src2 & op2124=0 { local tmp:1 = src1 == src2;  export tmp; }
+cc: "ge"  is src1 & src2 & op2124=2 { local tmp:1 = src1 s>= src2; export tmp; }
+cc: "geu" is src1 & src2 & op2124=3 { local tmp:1 = src1 >= src2;  export tmp; }
+cc: "gt"  is src1 & src2 & op2124=4 { local tmp:1 = src1 s> src2;  export tmp; }
+cc: "gtu" is src1 & src2 & op2124=5 { local tmp:1 = src1 > src2;   export tmp; }
+cc: "le"  is src1 & src2 & op2124=6 { local tmp:1 = src2 s>= src1; export tmp; }
+cc: "leu" is src1 & src2 & op2124=7 { local tmp:1 = src2 >= src1;  export tmp; }
+cc: "lt"  is src1 & src2 & op2124=8 { local tmp:1 = src2 s> src1;  export tmp; }
+cc: "ltu" is src1 & src2 & op2124=9 { local tmp:1 = src2 > src1;   export tmp; }
+cc: "ne"  is src1 & src2 & op2124=1 { local tmp:1 = src1 != src2;  export tmp; }
+
+
+# cmpeq RDEST = RSRC1, RSRC2
+# cmpeq RIDEST = RSRC1, ISRC2
+# cmpge RDEST = RSRC1, RSRC2
+# cmpge RIDEST = RSRC1, ISRC2
+# cmpgeu RDEST = RSRC1, RSRC2
+# cmpgeu RIDEST = RSRC1, ISRC2
+# cmpgt RDEST = RSRC1, RSRC2
+# cmpgt RIDEST = RSRC1, ISRC2
+# cmpgtu RDEST = RSRC1, RSRC2
+# cmpgtu RIDEST = RSRC1, ISRC2
+# cmple RDEST = RSRC1, RSRC2
+# cmple RIDEST = RSRC1, ISRC2
+# cmpleu RDEST = RSRC1, RSRC2
+# cmpleu RIDEST = RSRC1, ISRC2
+# cmplt RDEST = RSRC1, RSRC2
+# cmplt RIDEST = RSRC1, ISRC2
+# cmpltu RDEST = RSRC1, RSRC2
+# cmpltu RIDEST = RSRC1, ISRC2
+# cmpne RDEST = RSRC1, RSRC2
+# cmpne RIDEST = RSRC1, ISRC2
+:cmp^cc dst=src1,src2 is op31 & stop & src1 & src2 & dst & op26=1 & op2829=0 & cc
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	dst = zext(cc);
+}
+
+# cmpeq BBDEST = RSRC1, RSRC2
+# cmpeq BIBDEST = RSRC1, ISRC2
+# cmpge BBDEST = RSRC1, RSRC2
+# cmpge BIBDEST = RSRC1, ISRC2
+# cmpgeu BBDEST = RSRC1, RSRC2
+# cmpgeu BIBDEST = RSRC1, ISRC2
+# cmpgt BBDEST = RSRC1, RSRC2
+# cmpgt BIBDEST = RSRC1, ISRC2
+# cmpgtu BBDEST = RSRC1, RSRC2
+# cmpgtu BIBDEST = RSRC1, ISRC2
+# cmple BBDEST = RSRC1, RSRC2
+# cmple BIBDEST = RSRC1, ISRC2
+# cmpleu BBDEST = RSRC1, RSRC2
+# cmpleu BIBDEST = RSRC1, ISRC2
+# cmplt BBDEST = RSRC1, RSRC2
+# cmplt BIBDEST = RSRC1, ISRC2
+# cmpltu BBDEST = RSRC1, RSRC2
+# cmpltu BIBDEST = RSRC1, ISRC2
+# cmpne BBDEST = RSRC1, RSRC2
+# cmpne BIBDEST = RSRC1, ISRC2
+:cmp^cc bdst=src1,src2 is op31 & stop & src1 & src2 & bdst & op26=1 & op2829=0 & cc
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	bdst = cc;
+}
+
+# divs RDEST, BBDEST = RSRC1, RSRC2, BSCOND
+:divs DEST,BDEST=src1,SRC2,SCOND is op31 & stop & src1 & SRC2 & DEST & BDEST & SCOND & op2427=4 & op2829=1
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+}
+
+# goto BTARG
+:goto BTARG is op31 & stop & BTARG & op23=0 & op2426=1 & op27=0 & op2829=3
+{
+	# This is the first syllable of a bundle
+	#TODO
+	build stop; BUNDLE(op31:1);
+	goto BTARG;
+}
+
+# goto $r63
+:goto r63 is op31 & stop & op0022=0 & op23=1 & op2426=1 & op27=0 & op2829=3 & r63
+{
+	# This is the first syllable of a bundle
+	#TODO
+	build stop; BUNDLE(op31:1);
+	return [r63];
+}
+
+# imml IMM
+:imml IMM is op31 & stop & IMM & op2327=10 & op2829=1
+{
+	# left association (word address - 1)
+	#TODO
+	extension = IMM;
+	build stop; BUNDLE(op31:1);
+}
+
+# immr IMM
+:immr IMM is op31 & stop & IMM & op2327=11 & op2829=1
+{
+	# right association (word address + 1)
+	#TODO
+	extension = IMM;
+	build stop; BUNDLE(op31:1);
+}
+
+# ldb RNLIDEST = ISRC2[RSRC1]
+:ldb NLIDEST=ISRC2[src1] is op31 & stop & src1 & NLIDEST & ISRC2 & op2122=0 & op23=0 & op2427=3 & op2829=2
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local ea:4 = ISRC2 + src1;
+	NLIDEST = sext(*[ram]:1 ea);
+}
+
+# ldb.d RNLIDEST = ISRC2[RSRC1]
+:ldb.d NLIDEST=ISRC2[src1] is op31 & stop & src1 & NLIDEST & ISRC2 & op2122=0 & op23=1 & op2427=3 & op2829=2
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local ea:4 = ISRC2 + src1;
+	NLIDEST = sext(*[ram]:1 ea);
+}
+
+# ldbu RNLIDEST = ISRC2[RSRC1]
+:ldbu NLIDEST=ISRC2[src1] is op31 & stop & src1 & NLIDEST & ISRC2 & op2122=0 & op23=0 & op2427=4 & op2829=2
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local ea:4 = ISRC2 + src1;
+	NLIDEST = *[ram]:1 ea;
+}
+
+# ldbu.d RNLIDEST = ISRC2[RSRC1]
+:ldbu.d NLIDEST=ISRC2[src1] is op31 & stop & src1 & NLIDEST & ISRC2 & op2122=0 & op23=1 & op2427=4 & op2829=2
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local ea:4 = ISRC2 + src1;
+	NLIDEST = *[ram]:1 ea;
+}
+
+# ldh RNLIDEST = ISRC2[RSRC1]
+:ldh NLIDEST=ISRC2[src1] is op31 & stop & src1 & NLIDEST & ISRC2 & op2122=0 & op23=0 & op2427=1 & op2829=2
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local ea:4 = ISRC2 + src1;
+	NLIDEST = sext(*[ram]:2 ea);
+}
+
+# ldh.d RNLIDEST = ISRC2[RSRC1]
+:ldh.d NLIDEST=ISRC2[src1] is op31 & stop & src1 & NLIDEST & ISRC2 & op2122=0 & op23=1 & op2427=1 & op2829=2
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local ea:4 = ISRC2 + src1;
+	NLIDEST = sext(*[ram]:2 ea);
+}
+
+# ldhu RNLIDEST = ISRC2[RSRC1]
+:ldhu NLIDEST=ISRC2[src1] is op31 & stop & src1 & NLIDEST & ISRC2 & op2122=0 & op23=0 & op2427=2 & op2829=2
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local ea:4 = ISRC2 + src1;
+	NLIDEST = *[ram]:2 ea;
+}
+
+# ldhu.d RNLIDEST = ISRC2[RSRC1]
+:ldhu.d NLIDEST=ISRC2[src1] is op31 & stop & src1 & NLIDEST & ISRC2 & op2122=0 & op23=1 & op2427=2 & op2829=2
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local ea:4 = ISRC2 + src1;
+	NLIDEST = *[ram]:2 ea;
+}
+
+# ldw RIDEST = ISRC2[RSRC1]
+:ldw IDEST=ISRC2[src1] is op31 & stop & src1 & IDEST & ISRC2 & op2122=0 & op23=0 & op2427=0 & op2829=2
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local ea:4 = ISRC2 + src1;
+	IDEST = *[ram]:4 ea;
+}
+
+# ldw.d RIDEST = ISRC2[RSRC1]
+:ldw.d IDEST=ISRC2[src1] is op31 & stop & src1 & IDEST & ISRC2 & op2122=0 & op23=1 & op2427=0 & op2829=2
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local ea:4 = ISRC2 + src1;
+	IDEST = *[ram]:4 ea;
+}
+
+# max RDEST = RSRC1, RSRC2
+:max DEST=src1,SRC2 is op31 & stop & src1 & SRC2 & DEST & op1820=0 & op2124=0 & op25=1 & op26=0 & op27=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	DEST = (zext(src1 s>= SRC2) * src1) + (zext(src1 s< SRC2) * SRC2);
+}
+
+# max RIDEST = RSRC1, ISRC2
+:max IDEST=src1,ISRC2 is op31 & stop & src1 & IDEST & ISRC2 & op2124=0 & op25=1 & op26=0 & op27=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	IDEST = (zext(src1 s>= ISRC2) * src1) + (zext(src1 s< ISRC2) * ISRC2);
+}
+
+# maxu RDEST = RSRC1, RSRC2
+:maxu DEST=src1,SRC2 is op31 & stop & src1 & SRC2 & DEST & op1820=0 & op2125=17 & op26=0 & op27=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	DEST = (zext(src1 >= SRC2) * src1) + (zext(src1 < SRC2) * SRC2);
+}
+
+# maxu RIDEST = RSRC1, ISRC2
+:maxu IDEST=src1,ISRC2 is op31 & stop & src1 & IDEST & ISRC2 & op2125=17 & op26=0 & op27=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	IDEST = (zext(src1 >= ISRC2) * src1) + (zext(src1 < ISRC2) * ISRC2);
+}
+
+# min RDEST = RSRC1, RSRC2
+:min DEST=src1,SRC2 is op31 & stop & src1 & SRC2 & DEST & op1820=0 & op2125=18 & op26=0 & op27=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	DEST = (zext(src1 s< SRC2) * src1) + (zext(src1 s>= SRC2) * SRC2);
+}
+
+# min RIDEST = RSRC1, ISRC2
+:min IDEST=src1,ISRC2 is op31 & stop & src1 & IDEST & ISRC2 & op2125=18 & op26=0 & op27=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	IDEST = (zext(src1 s< ISRC2) * src1) + (zext(src1 s>= ISRC2) * ISRC2);
+}
+
+# minu RDEST = RSRC1, RSRC2
+:minu DEST=src1,SRC2 is op31 & stop & src1 & SRC2 & DEST & op1820=0 & op2125=19 & op26=0 & op27=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	DEST = (zext(src1 < SRC2) * src1) + (zext(src1 >= SRC2) * SRC2);
+}
+
+# minu RIDEST = RSRC1, ISRC2
+:minu IDEST=src1,ISRC2 is op31 & stop & src1 & IDEST & ISRC2 & op2125=19 & op26=0 & op27=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	IDEST = (zext(src1 < ISRC2) * src1) + (zext(src1 >= ISRC2) * ISRC2);
+}
+
+# mulh RNLDEST = RSRC1, RSRC2
+:mulh NLDEST=src1,SRC2 is op31 & stop & src1 & SRC2 & NLDEST & op1820=0 & op2125=23 & op26=0 & op27=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:8 = sext(src1) * (sext(SRC2) s>> 16);
+	NLDEST = tmp[0,32];
+}
+
+# mulh RNLIDEST = RSRC1, ISRC2
+:mulh NLIDEST=src1,ISRC2 is op31 & stop & src1 & NLIDEST & ISRC2 & op2124=7 & op25=1 & op26=0 & op27=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:8 = sext(src1) * (sext(ISRC2) s>> 16);
+	NLIDEST = tmp[0,32];
+}
+
+# mulhh RNLDEST = RSRC1, RSRC2
+:mulhh NLDEST=src1,SRC2 is op31 & stop & src1 & SRC2 & NLDEST & op1820=0 & op2125=29 & op26=0 & op27=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:4 = (src1 s>> 16) * (SRC2 s>> 16);
+	NLDEST = tmp;
+}
+
+# mulhh RNLIDEST = RSRC1, ISRC2
+:mulhh NLIDEST=src1,ISRC2 is op31 & stop & src1 & NLIDEST & ISRC2 & op2125=29 & op26=0 & op27=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:4 = (src1 s>> 16) * (ISRC2 s>> 16);
+	NLIDEST = tmp;
+}
+
+# mulhhs RNLDEST = RSRC1, RSRC2
+:mulhhs NLDEST=src1,SRC2 is op31 & stop & src1 & SRC2 & NLDEST & op1820=0 & op2125=20 & op26=0 & op27=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:8 = (sext(src1) * (sext(SRC2) s>> 16) s>> 16);
+	NLDEST = tmp[0,32];
+}
+
+# mulhhs RNLIDEST = RSRC1, ISRC2
+:mulhhs NLIDEST=src1,ISRC2 is op31 & stop & src1 & NLIDEST & ISRC2 & op2125=20 & op26=0 & op27=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:8 = (sext(src1) * (sext(ISRC2) s>> 16) s>> 16);
+	NLIDEST = tmp[0,32];
+}
+
+# mulhhu RNLDEST = RSRC1, RSRC2
+:mulhhu NLDEST=src1,SRC2 is op31 & stop & src1 & SRC2 & NLDEST & op1820=0 & op2125=30 & op26=0 & op27=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:4 = (src1 >> 16) * (SRC2 >> 16);
+	NLDEST = tmp;
+}
+
+# mulhhu RNLIDEST = RSRC1, ISRC2
+:mulhhu NLIDEST=src1,ISRC2 is op31 & stop & src1 & NLIDEST & ISRC2 & op2125=30 & op26=0 & op27=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:4 = (src1 >> 16) * (ISRC2 >> 16);
+	NLIDEST = tmp;
+}
+
+# mulhs RNLDEST = RSRC1, RSRC2
+:mulhs NLDEST=src1,SRC2 is op31 & stop & src1 & SRC2 & NLDEST & op1820=0 & op2125=31 & op26=0 & op27=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:8 = (sext(src1) * (sext(SRC2) s>> 16) << 16);
+	NLDEST = tmp[0,32];
+}
+
+# mulhs RNLIDEST = RSRC1, ISRC2
+:mulhs NLIDEST=src1,ISRC2 is op31 & stop & src1 & NLIDEST & ISRC2 & op2125=31 & op26=0 & op27=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:8 = (sext(src1) * (sext(ISRC2) s>> 16) << 16);
+	NLIDEST = tmp[0,32];
+}
+
+# mulhu RNLDEST = RSRC1, RSRC2
+:mulhu NLDEST=src1,SRC2 is op31 & stop & src1 & SRC2 & NLDEST & op1820=0 & op2125=24 & op26=0 & op27=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:8 = zext(src1) * (zext(SRC2) >> 16);
+	NLDEST = tmp[0,32];
+}
+
+# mulhu RNLIDEST = RSRC1, ISRC2
+:mulhu NLIDEST=src1,ISRC2 is op31 & stop & src1 & NLIDEST & ISRC2 & op2125=24 & op26=0 & op27=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:8 = zext(src1) * (zext(ISRC2) >> 16);
+	NLIDEST = tmp[0,32];
+}
+
+# mull RNLDEST = RSRC1, RSRC2
+:mull NLDEST=src1,SRC2 is op31 & stop & src1 & SRC2 & NLDEST & op1820=0 & op2125=21 & op26=0 & op27=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:8 = sext(src1) * sext(SRC2[0,16]);
+	NLDEST = tmp[0,32];
+}
+
+# mull RNLIDEST = RSRC1, ISRC2
+:mull NLIDEST=src1,ISRC2 is op31 & stop & src1 & NLIDEST & ISRC2 & op2125=21 & op26=0 & op27=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:8 = sext(src1) * sext(ISRC2[0,16]);
+	NLIDEST = tmp[0,32];
+}
+
+# mullh RNLDEST = RSRC1, RSRC2
+:mullh NLDEST=src1,SRC2 is op31 & stop & src1 & SRC2 & NLDEST & op1820=0 & op2125=27 & op26=0 & op27=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:4 = sext(src1[0,16]) * (sext(SRC2) s>> 16);
+	NLDEST = tmp;
+}
+
+# mullh RNLIDEST = RSRC1, ISRC2
+:mullh NLIDEST=src1,ISRC2 is op31 & stop & src1 & NLIDEST & ISRC2 & op2125=27 & op26=0 & op27=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:4 = sext(src1[0,16]) * (sext(ISRC2) s>> 16);
+	NLIDEST = tmp;
+}
+
+# mullhu RNLDEST = RSRC1, RSRC2
+:mullhu NLDEST=src1,SRC2 is op31 & stop & src1 & SRC2 & NLDEST & op1820=0 & op2125=28 & op26=0 & op27=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:4 = zext(src1[0,16]) * (zext(SRC2) >> 16);
+	NLDEST = tmp;
+}
+
+# mullhu RNLIDEST = RSRC1, ISRC2
+:mullhu NLIDEST=src1,ISRC2 is op31 & stop & src1 & NLIDEST & ISRC2 & op2125=28 & op26=0 & op27=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:4 = zext(src1[0,16]) * (zext(ISRC2) >> 16);
+	NLIDEST = tmp;
+}
+
+# mullhus RNLDEST = RSRC1, RSRC2
+:mullhus NLDEST=src1,SRC2 is op31 & stop & src1 & SRC2 & NLDEST & op1820=0 & op2125=15 & op26=0 & op27=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:4 = (sext(src1) * zext(SRC2[0,16])) s>> 32;
+	NLDEST = tmp;
+}
+
+# mullhus RNLIDEST = RSRC1, ISRC2
+:mullhus NLIDEST=src1,ISRC2 is op31 & stop & src1 & NLIDEST & ISRC2 & op2125=15 & op26=0 & op27=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:4 = (sext(src1) * zext(ISRC2[0,16])) s>> 32;
+	NLIDEST = tmp;
+}
+
+# mulll RNLDEST = RSRC1, RSRC2
+:mulll NLDEST=src1,SRC2 is op31 & stop & src1 & SRC2 & NLDEST & op1820=0 & op2125=25 & op26=0 & op27=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:4 = sext(src1[0,16]) * sext(SRC2[0,16]);
+	NLDEST = tmp;
+}
+
+# mulll RNLIDEST = RSRC1, ISRC2
+:mulll NLIDEST=src1,ISRC2 is op31 & stop & src1 & NLIDEST & ISRC2 & op2125=25 & op26=0 & op27=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:4 = sext(src1[0,16]) * sext(ISRC2[0,16]);
+	NLIDEST = tmp;
+}
+
+# mulllu RNLDEST = RSRC1, RSRC2
+:mulllu NLDEST=src1,SRC2 is op31 & stop & src1 & SRC2 & NLDEST & op1820=0 & op2125=26 & op26=0 & op27=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:4 = zext(src1[0,16]) * zext(SRC2[0,16]);
+	NLDEST = tmp;
+}
+
+# mulllu RNLIDEST = RSRC1, ISRC2
+:mulllu NLIDEST=src1,ISRC2 is op31 & stop & src1 & NLIDEST & ISRC2 & op2125=26 & op26=0 & op27=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:4 = zext(src1[0,16]) * zext(ISRC2[0,16]);
+	NLIDEST = tmp;
+}
+
+# mullu RNLDEST = RSRC1, RSRC2
+:mullu NLDEST=src1,SRC2 is op31 & stop & src1 & SRC2 & NLDEST & op1820=0 & op2125=22 & op26=0 & op27=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:8 = zext(src1) * zext(SRC2[0,16]);
+	NLDEST = tmp[0,32];
+}
+
+# mullu RNLIDEST = RSRC1, ISRC2
+:mullu NLIDEST=src1,ISRC2 is op31 & stop & src1 & NLIDEST & ISRC2 & op2125=22 & op26=0 & op27=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:8 = zext(src1) * zext(ISRC2[0,16]);
+	NLIDEST = tmp[0,32];
+}
+
+#TODO  ST231
+# mul32 RNLDEST = RSRC1, RSRC2
+:mul32 NLDEST=src1,SRC2 is op31 & stop & src1 & SRC2 & NLDEST & op1820=0 & op2125=14 & op26=1 & op27=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:8 = sext(src1) * sext(SRC2);
+	NLDEST = tmp[0,32];
+}
+#TODO  ST231
+
+#TODO  ST231
+# mul32 RNLIDEST = RSRC1, ISRC2
+:mul32 NLIDEST=src1,ISRC2 is op31 & stop & src1 & NLIDEST & ISRC2 & op2125=14 & op26=1 & op27=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:8 = sext(src1) * sext(ISRC2);
+	NLIDEST = tmp[0,32];
+}
+#TODO  ST231
+
+#TODO  ST231
+# mul64h RNLDEST = RSRC1, RSRC2
+:mul64h NLDEST=src1,SRC2 is op31 & stop & src1 & SRC2 & NLDEST & op1820=0 & op2125=15 & op26=1 & op27=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:8 = sext(src1) * sext(SRC2);
+	NLDEST = tmp[32,32];	
+}
+#TODO  ST231
+
+#TODO  ST231
+# mul64h RNLIDEST = RSRC1, ISRC2
+:mul64h NLIDEST=src1,ISRC2 is op31 & stop & src1 & NLIDEST & ISRC2 & op2125=15 & op26=1 & op27=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:8 = sext(src1) * sext(ISRC2);
+	NLIDEST = tmp[32,32];	
+}
+#TODO  ST231
+
+#TODO  ST231
+# mul64hu RNLDEST = RSRC1, RSRC2
+:mul64hu NLDEST=src1,SRC2 is op31 & stop & src1 & SRC2 & NLDEST & op1820=0 & op2125=30 & op26=1 & op27=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:8 = zext(src1) * zext(SRC2);
+	NLDEST = tmp[32,32];	
+}
+#TODO  ST231
+
+#TODO  ST231
+# mul64hu RNLIDEST = RSRC1, ISRC2
+:mul64hu NLIDEST=src1,ISRC2 is op31 & stop & src1 & NLIDEST & ISRC2 & op2125=30 & op26=1 & op27=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local tmp:8 = zext(src1) * zext(ISRC2);
+	NLIDEST = tmp[32,32];	
+}
+#TODO  ST231
+
+#TODO  ST231
+# mulfrac RNLDEST = RSRC1, RSRC2
+:mulfrac NLDEST=src1,SRC2 is op31 & stop & src1 & SRC2 & NLDEST & op1820=0 & op2125=31 & op26=1 & op27=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+}
+#TODO  ST231
+
+#TODO  ST231
+# mulfrac RNILDEST = RSRC1, ISRC2
+:mulfrac NLIDEST=src1,ISRC2 is op31 & stop & src1 & NLIDEST & ISRC2 & op1820=0 & op2125=31 & op26=1 & op27=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+}
+#TODO  ST231
+
+# nandl RDEST = RSRC1, RSRC2
+# nandl RIDEST = RSRC1, ISRC2
+:nandl dst=src1,src2 is op31 & stop & src1 & src2 & dst & op2124=11 & op26=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	dst = zext(!((src1 != 0) & (src2 != 0)));
+}
+
+# nandl BBDEST = RSRC1, RSRC2
+# nandl BIBDEST = RSRC1, ISRC2
+:nandl bdst=src1,src2 is op31 & stop & src1 & src2 & bdst & op2124=11 & op26=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	bdst = !((src1 != 0) & (src2 != 0));
+}
+
+# norl RDEST = RSRC1, RSRC2
+# norl RIDEST = RSRC1, ISRC2
+:norl dst=src1,src2 is op31 & stop & src1 & src2 & dst & op2124=13 & op26=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	dst = zext(!((src1 != 0) | (src2 != 0)));
+}
+
+# norl BBDEST = RSRC1, RSRC2
+# norl BIBDEST = RSRC1, ISRC2
+:norl bdst=src1,src2 is op31 & stop & src1 & src2 & bdst & op2124=13 & op26=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	bdst = !((src1 != 0) | (src2 != 0));
+}
+
+# or RDEST = RSRC1, RSRC2
+# or RIDEST = RSRC1, ISRC2
+:or dst=src1,src2 is op31 & stop & src1 & src2 & dst & op2124=11 & op25=0 & op26=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	dst = src1 | src2;
+}
+
+# orc RDEST = RSRC1, RSRC2
+# orc RIDEST = RSRC1, ISRC2
+:orc dst=src1,src2 is op31 & stop & src1 & src2 & dst & op2124=12 & op25=0 & op26=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	dst = ~src1 | src2;
+}
+
+# orl RDEST = RSRC1, RSRC2
+# orl RIDEST = RSRC1, ISRC2
+:orl dst=src1,src2 is op31 & stop & src1 & src2 & dst & op2124=12 & op26=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	dst = zext(src1 != 0) | zext(src2 != 0);
+}
+
+# orl BBDEST = RSRC1, RSRC2
+# orl BIBDEST = RSRC1, ISRC2
+:orl bdst=src1,src2 is op31 & stop & src1 & src2 & bdst & op2124=12 & op26=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	bdst = zext(src1 != 0) | zext(src2 != 0);
+}
+
+# pft ISRC2[RSRC1]
+:pft ISRC2[src1] is op31 & stop & src1 & ISRC2 & op2122=0 & op2327=13 & op2829=2
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local ea:4 = ISRC2 + src1;
+	PrefetchMemory(ea);
+}
+
+# prgadd ISRC2[RSRC1]
+:prgadd ISRC2[src1] is op31 & stop & src1 & ISRC2 & op2122=0 & op2327=14 & op2829=2
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local ea:4 = ISRC2 + src1;
+	PurgeAddress(ea);
+}
+
+# prgins
+:prgins is op0020=0 & op2127=124 & op2829=1 & op31=1
+{
+	# Must be the only operation in the bundle
+	#TODO
+	PurgeIns();
+}
+
+#TODO  ST231
+# prginspg ISRC2[RSRC1]
+:prginspg ISRC2[src1] is op31 & stop & src1 & op0611=0 & ISRC2 & op2122=0 & op2327=17 & op2829=2 
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local ea:4 = ISRC2 + src1;
+	PurgeInsPg(ea);	
+}
+#TODO  ST231
+
+# prgset ISRC2[RSRC1]
+:prgset ISRC2[src1] is op31 & stop & src1 & op0611=0 & ISRC2 & op2122=0 & op2327=0b01111 & op2829=2
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local ea:4 = ISRC2 + src1;
+	PurgeSet(ea);
+}
+
+#TODO  ST231
+# pswclr RSRC2
+:pswclr SRC2 is op31 & stop & op0005=0 & SRC2 & op1220=0 & op2122=0 & op2327=19 & op2829=2
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	PswClr(SRC2);
+}
+#TODO  ST231
+
+#TODO  ST231
+# pswset RSRC2
+:pswset SRC2 is op31 & stop & op0005=0 & SRC2 & op1220=0 & op2122=0 & op2327=18 & op2829=2
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	PswSet(SRC2);
+}
+#TODO  ST231
+
+# rfi
+:rfi is op31 & stop & op0022=0 & op23=0 & op2426=2 & op27=0 & op2829=3
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local ea:4 = rfi();
+	return [ea];
+}
+
+# sbrk SBRKNUM
+:sbrk SBRKNUM is SBRKNUM & op2127=125 & op2829=1 & op31=1
+{
+	# No address/bundle restrictions ... 31==1, huh?
+	#TODO
+	local tmp:4 = sbreak(SBRKNUM);
+	call[tmp];
+}
+
+# sh1add RDEST = RSRC1, RSRC2
+# sh1add RIDEST = RSRC1, ISRC2
+:sh1add dst=src1,src2 is op31 & stop & src1 & src2 & dst & op2124=5 & op26=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	dst = (src1 << 1) + src2;
+}
+
+
+# sh2add RDEST = RSRC1, RSRC2
+# sh2add RIDEST = RSRC1, ISRC2
+:sh2add dst=src1,src2 is op31 & stop & src1 & src2 & dst & op2124=6 & op26=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	dst = (src1 << 2) + src2;
+}
+
+# sh3add RDEST = RSRC1, RSRC2
+# sh3add RIDEST = RSRC1, ISRC2
+:sh3add dst=src1,src2 is op31 & stop & src1 & src2 & dst & op2124=7 & op26=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	dst = (src1 << 3) + src2;
+}
+
+# sh4add RDEST = RSRC1, RSRC2
+# sh4add RIDEST = RSRC1, ISRC2
+:sh4add dst=src1,src2 is op31 & stop & src1 & src2 & dst & op2124=8 & op26=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	dst = (src1 << 4) + src2;
+}
+
+# shl RDEST = RSRC1, RSRC2
+# shl RIDEST = RSRC1, ISRC2
+:shl dst=src1,src2 is op31 & stop & src1 & src2 & dst & op2124=2 & op26=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	dst = src1 << src2;
+}
+
+# shr RDEST = RSRC1, RSRC2
+# shr RIDEST = RSRC1, ISRC2
+:shr dst=src1,src2 is op31 & stop & src1 & src2 & dst & op2124=3 & op26=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	dst = src1 s>> src2;
+}
+
+# shru RDEST = RSRC1, RSRC2
+# shru RIDEST = RSRC1, ISRC2
+:shru dst=src1,src2 is op31 & stop & src1 & src2 & dst & op2124=4 & op26=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	dst = src1 >> src2;
+}
+
+# slct RDEST = BSCOND, RSRC1, RSRC2
+# slct RIDEST = BSCOND, RSRC1, ISRC2
+:slct dst=SCOND,src1,src2 is op31 & stop & src1 & src2 & dst & SCOND & op2426=0 & op2829=1
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	dst = (zext(SCOND != 0) * src1) + (zext(SCOND == 0) * src2);
+}
+
+# slctf RDEST = BSCOND, RSRC1, RSRC2
+# slctf RIDEST = BSCOND, RSRC1, ISRC2
+:slctf dst=SCOND,src1,src2 is op31 & stop & src1 & src2 & dst & SCOND & op2426=1 & op2829=1
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	dst = (zext(SCOND != 0) * src2) + (zext(SCOND == 0) * src1);
+}
+
+# stb ISRC2[RSRC1] = RSRC2
+:stb ISRC2[src1]=SRC2 is op31 & stop & src1 & SRC2 & ISRC2 & op2122=0 & op2327=12 & op2829=2
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local ea:4 = ISRC2 + src1;
+	*[ram]:1 ea = SRC2[0,8];
+}
+
+# sth ISRC2[RSRC1] = RSRC2
+:sth ISRC2[src1]=SRC2 is op31 & stop & src1 & SRC2 & ISRC2 & op2122=0 & op2327=11 & op2829=2
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local ea:4 = ISRC2 + src1;
+	*[ram]:2 ea = SRC2[0,16];
+}
+
+# stw ISRC2[RSRC1] = RSRC2
+:stw ISRC2[src1]=SRC2 is op31 & stop & src1 & SRC2 & ISRC2 & op2122=0 & op2327=10 & op2829=2
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	local ea:4 = ISRC2 + src1;
+	*[ram]:4 ea = SRC2;
+}
+
+# sub RDEST = RSRC2, RSRC1
+# sub RIDEST = ISRC2, RSRC1
+:sub dst=src2,src1 is op31 & stop & src1 & src2 & dst & op2124=1 & op26=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	dst = src2 - src1;
+}
+
+# sxtb RIDEST = RSRC1
+:sxtb IDEST=src1 is op31 & stop & src1 & IDEST & op1220=0 & op2125=14 & op26=0 & op27=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	IDEST = sext(src1[0,8]);
+}
+
+# sxth RIDEST = RSRC1
+:sxth IDEST=src1 is op31 & stop & src1 & IDEST & op1220=1 & op2125=14 & op26=0 & op27=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	IDEST = sext(src1[0,16]);
+}
+
+# sync
+:sync is op0005=0 & op0611=0 & op1220=0 & op2122=0 & op2327=0b10000 & op2829=2 & op31=1
+{
+	# Only syllable in the bundle
+	#TODO
+	Sync();
+}
+
+# syscall SBRKNUM
+:syscall SBRKNUM is SBRKNUM & op2127=0b1111110 & op2829=1 & op31=1
+{
+	# Only syllable in the bundle
+	#TODO
+	local ea:4 = syscall(SBRKNUM);
+	call [ea];
+}
+
+# xor RDEST = RSRC1, RSRC2
+# xor RIDEST = RSRC1, ISRC2
+:xor dst=src1,src2 is op31 & stop & src1 & src2 & dst & op2124=13 & op26=0 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	dst = src1 ^ src2;
+}
+
+# zxth RIDEST = RSRC1
+:zxth IDEST=src1 is op31 & stop & src1 & IDEST & op1220=0b000000011 & op2125=0b01110 & op26=0 & op27=1 & op2829=0
+{
+	#TODO
+	build stop; BUNDLE(op31:1);
+	IDEST = zext(src1[0,16]);
+}
+
+# bit 30 is always zero
+} # with : op30=0 { 
