@@ -1,0 +1,8 @@
+<patternconstraints>
+  <language id="ST200:BE:*:*">
+    <patternfile>ST200_BE_patterns.xml</patternfile>
+  </language>
+  <language id="ST200:LE:*:*">
+    <patternfile>ST200_LE_patterns.xml</patternfile>
+  </language>
+</patternconstraints>

@@ -42,6 +42,13 @@ define register offset=0x200 size=1 [ b0 b1 b2 b3 b4 b5 b6 b7 ];
 
 define register offset=0x300 size=4 [ extension ];
 
+# # Context register
+# define register offset=0x2000 size=4 [ contextreg ];
+
+# define context contextreg
+#   bundle=(0,2)
+# ;
+
 define token insn (32)
   op0005 = (0,5)
   op0020 = (0,20)
@@ -83,9 +90,6 @@ define token insn (32)
   BCOND = (23,25)
   LNK = (23,23)
 ;
-
-# TODO ATTACH
-# TODO r0 zero logic
 
 attach variables [ BCOND BDEST BDEST2 IBDEST SCOND ]
                  [ b0 b1 b2 b3 b4 b5 b6 b7 ];
@@ -142,6 +146,54 @@ with : op30=0 {
 # Table / Constructor
 #
 
+# TODO:  position delayslot with context.  `imml` is stupid
+
+# # last instruction of bundle
+# :^instruction is op31=1 & bundle=0 & instruction [ bundle=4; globalset(inst_next, bundle); ] {
+# 	# 0-  add r16,r0,1  <- op31=1, bundle=0 -> bundle=4
+# }
+# :^instruction is op31=1 & bundle=1 & instruction [ bundle=4; globalset(inst_next, bundle); ] {
+# 	# 0-  add r16,r0,1     op31=0, bundle=0 -> bundle=1
+# 	# 1- _add r17,r0,1  <- op31=1, bundle=1 -> bundle=4
+# }
+# :^instruction is op31=1 & bundle=2 & instruction [ bundle=4; globalset(inst_next, bundle); ] {
+# 	# 0-  add r16,r0,1     op31=0, bundle=0 -> bundle=1
+# 	# 1- _add r17,r0,1     op31=0, bundle=1 -> bundle=2
+# 	# 2- _add r18,r0,1  <- op31=1, bundle=2 -> bundle=4
+# }
+# :^instruction is op31=1 & bundle=3 & instruction [ bundle=4; globalset(inst_next, bundle); ] {
+# 	# 0-  add r16,r0,1     op31=0, bundle=0 -> bundle=1
+# 	# 1- _add r17,r0,1     op31=0, bundle=1 -> bundle=2
+# 	# 2- _add r18,r0,1     op31=0, bundle=2 -> bundle=3
+# 	# 3- _add r19,r0,1  <- op31=1, bundle=3 -> bundle=4
+# }
+
+# :^instruction is op31=0 & bundle=2 & instruction [ bundle=3; globalset(inst_next, bundle); ] {
+# 	# 0-  add r16,r0,1     op31=0, bundle=0 -> bundle=1
+# 	# 1- _add r17,r0,1     op31=0, bundle=1 -> bundle=2
+# 	# 2- _add r18,r0,1  <- op31=0, bundle=2 -> bundle=3
+# 	# 3- _add r19,r0,1     op31=1, bundle=3 -> bundle=4
+# 	delayslot(1);
+# }
+# :^instruction is op31=0 & bundle=1 & instruction [ bundle=2; globalset(inst_next, bundle); ] {
+# 	# 0-  add r16,r0,1     op31=0, bundle=0 -> bundle=1
+# 	# 1- _add r17,r0,1  <- op31=0, bundle=1 -> bundle=2
+# 	# 2- _add r18,r0,1     op31=0, bundle=2 -> bundle=3
+# 	# 3- _add r19,r0,1     op31=1, bundle=3 -> bundle=4
+# 	delayslot(1);
+# }
+# :^instruction is op31=0 & bundle=0 & instruction [ bundle=1; globalset(inst_next, bundle); ] {
+# 	# 0-  add r16,r0,1  <- op31=0, bundle=0 -> bundle=1
+# 	# 1- _add r17,r0,1     op31=0, bundle=1 -> bundle=2
+# 	# 2- _add r18,r0,1     op31=0, bundle=2 -> bundle=3
+# 	# 3- _add r19,r0,1     op31=1, bundle=3 -> bundle=4
+# 	delayslot(1);
+# }
+
+# :^instruction is op31=0 & instruction { build instruction; delayslot(1); }
+# :^instruction is op31=1 & instruction { build instruction; }
+
+
 #TODO  does this have signed?
 BTARG: addr is sop0022 [ addr = inst_start + (sop0022 << 2); ] { local ea:4 = addr; export ea; }
 
@@ -178,7 +230,7 @@ src2: SRC2  is SRC2  & op27=0 & op0611=0 { local tmpzero:4 = 0; export tmpzero; 
 src2: SRC2  is SRC2  & op27=0            { export SRC2; }
 src2: ISRC2 is ISRC2 & op27=1            { local tmp:4 = ISRC2; export tmp; }
 
-stop: is op31=0 {} # { delayslot(1); }
+stop: is op31=0 {} #{ delayslot(1); }
 stop: is op31=1 {               }
 
 #
@@ -186,8 +238,8 @@ stop: is op31=1 {               }
 #
 
 macro BUNDLE(stop_bit) {
-#       if (stop_bit) goto <end_of_bundle>;
-#       delayslot(1);
+# 	if (stop_bit != 0) goto <end_of_bundle>;
+# 		delayslot(1);
 # <end_of_bundle>
 }
 

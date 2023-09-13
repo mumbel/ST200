@@ -1,0 +1,23 @@
+<patternlist>
+  <patternpairs totalbits="0" postbits="0">
+    <prepatterns>
+      <!-- "goto $r63" with 0-3 bundle instructions and alignment NOP -->
+      <data>0x000080b1</data>
+      <data>0x000080b1 0x00000000</data>
+      <data>0x00008031 0x...... 1.......</data>
+      <data>0x00008031 0x...... 1....... 0x00000000</data>
+      <data>0x00008031 0x...... 0....... 0x...... 1.......</data>
+      <data>0x00008031 0x...... 0....... 0x...... 1....... 0x00000000</data>
+      <data>0x00008031 0x...... 0....... 0x...... 0....... 0x...... 1.......</data>
+      <data>0x00008031 0x...... 0....... 0x...... 0....... 0x...... 1....... 0x00000000</data>
+    </prepatterns>
+    <postpatterns>
+      <!-- "add $r12=$r12,-N" -->
+      <data>0x0c ....0011 000..... .0001000</data>
+      <data>0x...... 0....... 0x0c ....0011 000..... .0001000</data>
+      <data>0x...... 0....... 0x...... 0....... 0x0c ....0011 000..... .0001000</data>
+      <data>0x...... 0....... 0x...... 0....... 0x...... 0....... 0x0c ....0011 000..... 0x88</data>
+      <funcstart />
+    </postpatterns>
+  </patternpairs>
+</patternlist>
